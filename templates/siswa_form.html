@@ -1,0 +1,39 @@
+{% extends 'base_admin.html' %}
+{% from '_ui.html' import icon %}
+{% block title %}{{ 'Ubah data siswa' if edit else 'Siswa baru' }}{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('siswa_detail', id_siswa=siswa.id_siswa) if edit else url_for('siswa_list') }}">{{ icon('arrow-left', 16) }}{{ 'Kembali ke detail' if edit else 'Semua siswa' }}</a>
+<div class="page-head"><div><h1>{{ 'Ubah data siswa' if edit else 'Siswa baru' }}</h1><p class="sub">{{ 'Perbarui data murid dan orang tua.' if edit else 'Isi data murid dan kontak orang tua.' }}</p></div></div>
+
+<section class="panel" style="max-width:760px">
+    <form class="panel-body" method="post" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert', 18) }}<span>{{ error }}</span></div>{% endif %}
+
+        <div class="form-section">
+            <h3>Data murid</h3>
+            <div class="grid-2">
+                <div class="field"><label for="nama_siswa">Nama lengkap murid</label><input class="input" id="nama_siswa" name="nama_siswa" value="{{ form.get('nama_siswa', '') }}" required autofocus></div>
+                <div class="field"><label for="kelas">Kelas</label><input class="input" id="kelas" name="kelas" value="{{ form.get('kelas', '') }}" placeholder="Contoh: 3" required></div>
+            </div>
+            <div class="field"><label for="asal_sekolah">Asal sekolah</label><input class="input" id="asal_sekolah" name="asal_sekolah" value="{{ form.get('asal_sekolah', '') }}" placeholder="Contoh: SD Negeri 1 Kotagede" required></div>
+            <div class="field"><label for="target_belajar">Target belajar <span class="opt">(opsional)</span></label><textarea class="textarea" id="target_belajar" name="target_belajar" placeholder="Contoh: Perlu penguatan perkalian, anaknya pemalu.">{{ form.get('target_belajar', '') }}</textarea></div>
+        </div>
+
+        <div class="form-section">
+            <h3>Orang tua dan lokasi les</h3>
+            <div class="grid-2">
+                <div class="field"><label for="nama_ortu">Nama orang tua</label><input class="input" id="nama_ortu" name="nama_ortu" value="{{ form.get('nama_ortu', '') }}" required></div>
+                <div class="field"><label for="nomor_wa">Nomor WhatsApp</label><input class="input" id="nomor_wa" name="nomor_wa" type="tel" inputmode="tel" value="{{ form.get('nomor_wa', '') }}" placeholder="0812 3456 7890" required>
+                    <p class="help">Dipakai orang tua untuk membuka rapor di portal.</p></div>
+            </div>
+            <div class="field"><label for="alamat">Alamat rumah</label><textarea class="textarea" id="alamat" name="alamat" placeholder="Jalan, RT/RW, kelurahan, patokan rumah" required>{{ form.get('alamat', '') }}</textarea></div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">{{ 'Simpan perubahan' if edit else 'Simpan siswa' }}</button>
+            <a class="btn btn-ghost" href="{{ url_for('siswa_detail', id_siswa=siswa.id_siswa) if edit else url_for('siswa_list') }}">Batal</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

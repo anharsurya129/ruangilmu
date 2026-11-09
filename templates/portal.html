@@ -1,0 +1,79 @@
+{% extends 'base_public.html' %}
+{% from '_ui.html' import icon %}
+{% block title %}Rapor belajar - {{ bimbel.nama }}{% endblock %}
+{% block meta %}<meta name="robots" content="noindex">{% endblock %}
+{% block main_class %}{{ '' if anak else 'narrow' }}{% endblock %}
+{% block content %}
+
+{% if not anak %}
+<div class="pub-card" style="margin-top:14px">
+    <h1>Rapor belajar Ananda</h1>
+    <p class="lead">Masukkan nomor WhatsApp yang didaftarkan untuk melihat materi, capaian, dan catatan tutor.</p>
+    {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert', 18) }}<span>{{ error }}</span></div>{% endif %}
+    <form method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <div class="field"><label for="nomor_wa">Nomor WhatsApp</label>
+            <input class="input" id="nomor_wa" name="nomor_wa" type="tel" inputmode="tel" autocomplete="tel" placeholder="Contoh: 0812 3456 7890" value="{{ nomor_input }}" required autofocus>
+            <p class="help">Boleh diawali 08, +62, atau 62.</p></div>
+        <button class="btn btn-primary btn-block" type="submit">Lihat rapor</button>
+    </form>
+</div>
+<p style="text-align:center;margin-top:18px;font-size:14px" class="muted">Belum terdaftar? <a href="{{ url_for('landing_page') }}#booking" style="font-weight:700">Daftar les sekarang</a></p>
+
+{% else %}
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 14px">
+    <div><h1 style="font-size:23px">Halo, {{ anak[0].siswa.nama_ortu }}</h1><p class="muted" style="font-size:14.5px">Berikut perkembangan belajar Ananda.</p></div>
+    <div class="no-print" style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" type="button" onclick="window.print()">{{ icon('print', 15) }}Cetak</button>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('portal') }}">Cari ulang</a>
+    </div>
+</div>
+
+{% if anak|length > 1 %}
+<div class="child-tabs" role="tablist" aria-label="Pilih anak">
+    {% for a in anak %}
+    <button class="child-tab" role="tab" type="button" data-child-tab="{{ a.siswa.id_siswa }}" aria-selected="{{ 'true' if loop.first else 'false' }}"><span class="avatar">{{ a.siswa.nama_siswa|inisial }}</span>{{ a.siswa.nama_siswa.split()[0] }}</button>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% for a in anak %}
+{% set s = a.siswa %}
+<section data-child-panel="{{ s.id_siswa }}" {% if not loop.first %}hidden{% endif %}>
+    <div class="child-profile">
+        <div class="top">
+            <span class="avatar avatar-lg">{{ s.nama_siswa|inisial }}</span>
+            <div><h2>{{ s.nama_siswa }}</h2><p class="muted" style="font-size:14.5px">Kelas {{ s.kelas }}, {{ s.asal_sekolah }}</p></div>
+        </div>
+        <div class="mini-stats">
+            <div><b>{{ a.laporan|length }}</b><span>Sesi dilaporkan</span></div>
+            <div><b>{{ a.mendatang|length }}</b><span>Sesi terjadwal</span></div>
+            <div><b>{{ (a.laporan[0].tanggal_les|tgl_pendek) if a.laporan else '-' }}</b><span>Sesi terakhir</span></div>
+        </div>
+        {% if s.target_belajar %}<div class="target-note"><b>Target belajar</b>{{ s.target_belajar }}</div>{% endif %}
+    </div>
+
+    {% if a.mendatang %}
+    <h2 class="section-title">Jadwal berikutnya</h2>
+    <div class="upcoming">
+        {% for j in a.mendatang %}
+        <div class="u-row"><div><b>{{ j.tanggal_les|tgl }}</b></div><span class="muted num">{{ j.jam_mulai }} - {{ j.jam_selesai }}</span></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <h2 class="section-title">Riwayat belajar</h2>
+    {% for l in a.laporan %}
+    <article class="rapor">
+        <div class="rapor-date">{{ l.tanggal_les|tgl }}</div>
+        <h3>{{ l.materi }}</h3>
+        <span class="stamp stamp-{{ l.status_tujuan|tone_capaian }}">{{ l.status_tujuan|label_capaian }}</span>
+        {% if l.catatan_bimbingan %}<p class="rapor-note"><b>Catatan tutor:</b> {{ l.catatan_bimbingan }}</p>{% endif %}
+    </article>
+    {% else %}
+    <div class="pub-card center-card" style="padding:28px 20px"><strong>Belum ada laporan</strong><p class="muted" style="margin-top:4px">Laporan muncul di sini setelah sesi pertama Ananda selesai.</p></div>
+    {% endfor %}
+</section>
+{% endfor %}
+{% endif %}
+{% endblock %}

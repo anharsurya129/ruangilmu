@@ -1,0 +1,76 @@
+{% extends 'base_admin.html' %}
+{% from '_ui.html' import icon, badge_state, badge_bayar %}
+{% from '_aksi.html' import aksi_jadwal with context %}
+{% block title %}{{ siswa.nama_siswa }}{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('siswa_list') }}">{{ icon('arrow-left', 16) }}Semua siswa</a>
+
+<div class="page-head">
+    <div class="profile">
+        <span class="avatar avatar-lg">{{ siswa.nama_siswa|inisial }}</span>
+        <div><h1>{{ siswa.nama_siswa }}</h1><p class="sub">Kelas {{ siswa.kelas }}, {{ siswa.asal_sekolah }}</p></div>
+    </div>
+    <div class="actions">
+        <a class="btn btn-wa" target="_blank" rel="noopener" href="{{ wa_link(siswa.nomor_wa, 'Halo Ibu/Bapak ' ~ siswa.nama_ortu ~ ', kami dari ' ~ bimbel.nama ~ '.') }}">{{ icon('chat', 18) }}WhatsApp</a>
+        <a class="btn btn-primary" href="{{ url_for('booking', id_siswa=siswa.id_siswa) }}">{{ icon('calendar', 18) }}Atur jadwal</a>
+    </div>
+</div>
+
+<div class="cols">
+    <div class="stack">
+        <section class="panel">
+            <div class="panel-head"><h2>Riwayat pertemuan</h2><span class="sub">{{ riwayat|length }} sesi</span></div>
+            {% if riwayat %}
+            <div class="table-wrap">
+            <table class="tbl stackable">
+                <thead><tr><th>Tanggal</th><th>Materi</th><th>Status</th><th>Pembayaran</th><th class="t-right">Aksi</th></tr></thead>
+                <tbody>
+                {% for j in riwayat %}
+                {% set jj = j %}
+                <tr>
+                    <td class="lead" data-label="Tanggal"><span class="cell-title">{{ j.tanggal_les|tgl_pendek }}</span><span class="cell-sub num">{{ j.jam_mulai }} - {{ j.jam_selesai }}</span></td>
+                    <td data-label="Materi">{{ j.materi or '-' }}</td>
+                    <td data-label="Status">{{ badge_state(j.state) }}</td>
+                    <td data-label="Pembayaran">{{ badge_bayar(j.status_pembayaran) }}</td>
+                    <td class="t-actions">{{ aksi_jadwal(dict(j, nama_siswa=siswa.nama_siswa), j.state) }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% else %}
+            <div class="empty"><strong>Belum ada pertemuan</strong>Atur jadwal pertama untuk {{ siswa.nama_siswa }}.
+                <div><a class="btn btn-primary btn-sm" href="{{ url_for('booking', id_siswa=siswa.id_siswa) }}">{{ icon('plus', 15) }}Atur jadwal</a></div></div>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="stack">
+        <section class="panel">
+            <div class="panel-head"><h2>Ringkasan</h2></div>
+            <div class="mini-stats" style="border:0;border-radius:0">
+                <div><b>{{ ringkas.selesai }}</b><span>Selesai</span></div>
+                <div><b>{{ ringkas.mendatang }}</b><span>Terjadwal</span></div>
+                <div><b>{{ ringkas.tagihan }}</b><span>Belum lunas</span></div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head"><h2>Data murid</h2><a class="btn btn-ghost btn-sm" href="{{ url_for('siswa_edit', id_siswa=siswa.id_siswa) }}">{{ icon('edit', 15) }}Ubah</a></div>
+            <div class="panel-body">
+                <dl class="facts" style="margin:0">
+                    <div class="fact"><dt>Orang tua</dt><dd>{{ siswa.nama_ortu }}</dd></div>
+                    <div class="fact"><dt>WhatsApp</dt><dd class="num">+{{ siswa.nomor_wa }}</dd></div>
+                    <div class="fact wide"><dt>Alamat</dt><dd>{{ siswa.alamat }}<br><a href="{{ peta_link(siswa.alamat) }}" target="_blank" rel="noopener" style="font-size:14px">Buka di peta</a></dd></div>
+                    <div class="fact wide"><dt>Target belajar</dt><dd>{{ siswa.target_belajar or 'Belum diisi' }}</dd></div>
+                </dl>
+            </div>
+        </section>
+
+        <form method="post" action="{{ url_for('siswa_hapus', id_siswa=siswa.id_siswa) }}" data-confirm="Hapus data {{ siswa.nama_siswa }}?|Seluruh jadwal dan laporan belajarnya ikut terhapus permanen dan tidak bisa dikembalikan.|Ya, hapus siswa">
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <button class="btn btn-danger btn-sm">{{ icon('trash', 15) }}Hapus siswa</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

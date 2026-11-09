@@ -1,0 +1,45 @@
+{% extends 'base_admin.html' %}
+{% from '_ui.html' import icon, badge_state, badge_bayar %}
+{% from '_aksi.html' import aksi_jadwal with context %}
+{% block title %}Jadwal{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div><h1>Jadwal</h1><p class="sub">Semua pertemuan, dari yang terbaru</p></div>
+    <div class="actions"><a class="btn btn-primary" href="{{ url_for('booking') }}">{{ icon('plus', 18) }}Atur jadwal</a></div>
+</div>
+
+<section class="panel" data-filter-scope>
+    <div class="toolbar">
+        <div class="chips" role="group" aria-label="Filter jadwal">
+            {% for kode, label in [('semua', 'Semua'), ('mendatang', 'Terjadwal'), ('perlu_laporan', 'Perlu laporan'), ('selesai', 'Selesai'), ('belum_lunas', 'Belum lunas')] %}
+            <button type="button" class="chip" data-chip="{{ kode }}" aria-pressed="{{ 'true' if kode == filter_awal else 'false' }}">{{ label }} <span class="count">{{ hitung[kode] }}</span></button>
+            {% endfor %}
+        </div>
+        <div class="search">{{ icon('search', 18) }}<input class="input" type="search" placeholder="Cari nama murid" aria-label="Cari nama murid" data-filter-input></div>
+    </div>
+
+    {% if jadwal %}
+    <div class="table-wrap">
+    <table class="tbl stackable">
+        <thead><tr><th>Tanggal</th><th>Waktu</th><th>Murid</th><th>Status</th><th>Pembayaran</th><th class="t-right">Aksi</th></tr></thead>
+        <tbody>
+        {% for j in jadwal %}
+        <tr data-row data-state="{{ j.state }}" data-bayar="{{ j.status_pembayaran }}" data-text="{{ j.nama_siswa }}">
+            <td class="lead" data-label="Tanggal"><span class="cell-title">{{ j.tanggal_les|tgl_pendek }}</span><span class="cell-sub">{{ j.tanggal_les|hari }}</span></td>
+            <td data-label="Waktu" class="num">{{ j.jam_mulai }} - {{ j.jam_selesai }}</td>
+            <td class="lead" data-label="Murid"><a class="cell-title" href="{{ url_for('siswa_detail', id_siswa=j.id_siswa) }}">{{ j.nama_siswa }}</a><span class="cell-sub">Kelas {{ j.kelas }}</span></td>
+            <td data-label="Status">{{ badge_state(j.state) }}</td>
+            <td data-label="Pembayaran">{{ badge_bayar(j.status_pembayaran) }}</td>
+            <td class="t-actions">{{ aksi_jadwal(j, j.state) }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <div class="empty" data-filter-empty hidden><strong>Tidak ada jadwal yang cocok</strong>Coba ganti filter atau kata pencarian.</div>
+    {% else %}
+    <div class="empty"><strong>Belum ada jadwal</strong>Atur pertemuan pertama untuk salah satu murid.
+        <div><a class="btn btn-primary btn-sm" href="{{ url_for('booking') }}">{{ icon('plus', 15) }}Atur jadwal</a></div></div>
+    {% endif %}
+</section>
+{% endblock %}

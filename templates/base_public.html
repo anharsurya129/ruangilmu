@@ -1,0 +1,28 @@
+{% from '_ui.html' import icon, fonts %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ bimbel.nama }}{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo1b.jpg') }}">
+    {% block meta %}{% endblock %}
+    {{ fonts() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v=asset_v) }}">
+</head>
+<body>
+<div class="pub">
+    <header class="pub-head">
+        <a class="pub-brand" href="{{ url_for('landing_page') }}">
+            <img src="{{ url_for('static', filename='logo1b.jpg') }}" alt="">{{ bimbel.nama }}
+        </a>
+    </header>
+    <main class="pub-main {% block main_class %}{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="pub-foot">&copy; 2026 {{ bimbel.nama }}</footer>
+</div>
+<script src="{{ url_for('static', filename='app.js', v=asset_v) }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,73 @@
+{% from '_ui.html' import icon, fonts %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>{% block title %}Ruang tutor{% endblock %} - {{ bimbel.nama }}</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo1b.jpg') }}">
+    {{ fonts() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v=asset_v) }}">
+</head>
+<body>
+{% set menu = [
+  ('admin_dashboard', 'Ringkasan', 'home', ['admin_dashboard']),
+  ('jadwal_list', 'Jadwal', 'calendar', ['jadwal_list', 'booking', 'buat_laporan']),
+  ('siswa_list', 'Siswa', 'users', ['siswa_list', 'siswa_detail', 'siswa_edit', 'tambah_siswa']),
+  ('keuangan', 'Keuangan', 'wallet', ['keuangan'])
+] %}
+<div class="app">
+    <aside class="rail">
+        <a class="rail-brand" href="{{ url_for('admin_dashboard') }}">
+            <img src="{{ url_for('static', filename='logo1b.jpg') }}" alt="">
+            <span><b>Ruang Ilmu</b><small>Ruang tutor</small></span>
+        </a>
+        <nav class="nav" aria-label="Menu utama">
+            {% for ep, label, ico, aktif in menu %}
+            <a href="{{ url_for(ep) }}" class="{{ 'active' if endpoint in aktif }}" {% if endpoint in aktif %}aria-current="page"{% endif %}>{{ icon(ico, 20) }}{{ label }}</a>
+            {% endfor %}
+        </nav>
+        <div class="rail-foot">
+            <a href="{{ url_for('landing_page') }}" target="_blank" rel="noopener">{{ icon('home', 20) }}Lihat website</a>
+            <a href="{{ url_for('logout') }}">{{ icon('logout', 20) }}Keluar</a>
+        </div>
+    </aside>
+
+    <div>
+        <header class="m-top">
+            <a class="brand" href="{{ url_for('admin_dashboard') }}"><img src="{{ url_for('static', filename='logo1b.jpg') }}" alt="">Ruang Ilmu</a>
+            <a class="out" href="{{ url_for('logout') }}">{{ icon('logout', 18) }}Keluar</a>
+        </header>
+        <main class="main" id="main">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<nav class="m-tabs" aria-label="Menu utama">
+    {% for ep, label, ico, aktif in menu %}
+    <a href="{{ url_for(ep) }}" class="{{ 'active' if endpoint in aktif }}">{{ icon(ico, 22) }}{{ label }}</a>
+    {% endfor %}
+</nav>
+
+<div class="toasts" role="status" aria-live="polite">
+    {% for kategori, pesan in get_flashed_messages(with_categories=true) %}
+    <div class="toast {{ 'toast-warn' if kategori == 'warn' }}">
+        {{ icon('alert' if kategori == 'warn' else 'check', 18) }}<span>{{ pesan }}</span><button type="button" aria-label="Tutup">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+
+<dialog class="confirm" id="confirmDialog" aria-labelledby="cTitle">
+    <div class="confirm-body"><h3 id="cTitle" data-c-title></h3><p data-c-text></p></div>
+    <div class="confirm-actions">
+        <button type="button" class="btn btn-ghost" data-c-cancel>Batal</button>
+        <button type="button" class="btn btn-primary" data-c-ok>Ya, lanjutkan</button>
+    </div>
+</dialog>
+
+<script src="{{ url_for('static', filename='app.js', v=asset_v) }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

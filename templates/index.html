@@ -1,0 +1,360 @@
+{% from '_ui.html' import icon, fonts %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ bimbel.nama }} - Teman Terbaik Belajarmu | Les Privat SD ke Rumah</title>
+    <meta name="description" content="Les privat SD ke rumah di {{ bimbel.lokasi }}. Tutor datang langsung, diawali mengaji Iqro dan bimbingan akhlak, dengan rapor digital untuk orang tua. {{ bimbel.harga | rupiah }} per pertemuan ({{ bimbel.durasi_menit }} menit).">
+    <meta property="og:title" content="{{ bimbel.nama }} - Teman Terbaik Belajarmu">
+    <meta property="og:description" content="Les privat SD ke rumah, berakar pada nilai Islami, dengan rapor digital untuk orang tua.">
+    <meta property="og:image" content="{{ url_for('static', filename='maskot.png', _external=True) }}">
+    <link rel="icon" href="{{ url_for('static', filename='logo1b.jpg') }}">
+    {{ fonts() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css', v=asset_v) }}">
+    <style>
+        section[id] { scroll-margin-top: 76px; }
+        .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+        .band { padding: 76px 0; }
+        .band-white { background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .band h2 { font-size: clamp(26px, 3.6vw, 34px); font-weight: 800; margin-bottom: 10px; }
+        .band .intro { color: var(--ink-soft); max-width: 600px; margin-bottom: 40px; font-size: 17px; }
+
+        /* navbar */
+        .nav-top { position: sticky; top: 0; z-index: 100; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+        .nav-top .wrap { display: flex; align-items: center; justify-content: space-between; height: 66px; }
+        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-weight: 800; font-size: 19px; letter-spacing: -0.02em; }
+        .brand img { height: 42px; width: auto; border-radius: 8px; }
+        .nav-links { display: flex; align-items: center; gap: 26px; }
+        .nav-links a:not(.btn) { color: var(--ink-soft); font-weight: 600; text-decoration: none; font-size: 15px; }
+        .nav-links a:not(.btn):hover { color: var(--ink); }
+        .nav-toggle { display: none; background: none; border: 0; color: var(--ink); cursor: pointer; padding: 8px; margin-right: -8px; }
+
+        /* hero: halaman buku tulis */
+        .hero { position: relative; background-color: #fff; border-bottom: 1px solid var(--line); overflow: hidden;
+            background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 35px, rgba(20, 48, 79, 0.07) 35px, rgba(20, 48, 79, 0.07) 36px); }
+        .hero::before { content: ""; position: absolute; top: 0; bottom: 0; left: max(12px, calc(50% - 556px)); width: 2px; background: rgba(179, 38, 46, 0.3); }
+        .hero .wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 36px; align-items: center; padding-top: 68px; padding-bottom: 64px; position: relative; }
+        .hero-text { padding-left: 22px; }
+        .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; background: var(--gold-tint); color: var(--gold-deep); border: 1px solid #ecd9a6; border-radius: 999px; font-size: 14px; font-weight: 700; margin-bottom: 20px; }
+        .hero h1 { font-size: clamp(38px, 6vw, 62px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; margin-bottom: 18px; }
+        .hero-lead { font-size: 18.5px; color: var(--ink-soft); max-width: 520px; margin-bottom: 28px; }
+        .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
+        .hero-cta .btn { padding: 14px 26px; font-size: 16px; }
+        .facts-strip { display: grid; grid-template-columns: repeat(3, auto); width: fit-content; max-width: 100%; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+        .facts-strip div { padding: 12px 20px; border-left: 1px solid var(--line-soft); }
+        .facts-strip div:first-child { border-left: 0; }
+        .facts-strip span { display: block; font-size: 12.5px; color: var(--ink-faint); font-weight: 600; }
+        .facts-strip b { font-size: 15px; white-space: nowrap; }
+        .hero-art { position: relative; text-align: center; }
+        .hero-art img { width: 100%; max-width: 380px; height: auto; }
+        .hero-art .rapor { position: absolute; left: -8px; bottom: 6px; width: 262px; margin: 0; padding: 14px 14px 14px 58px; text-align: left; box-shadow: 0 14px 30px rgba(20, 48, 79, 0.16); transform: rotate(-2deg); }
+        .hero-art .rapor::before { display: none; }
+        .hero-art .rapor h3 { font-size: 15.5px; margin-bottom: 10px; }
+        .hero-art .rapor .stamp { font-size: 12.5px; padding: 3px 10px; }
+        .hero-art .caption { position: absolute; left: 4px; bottom: -22px; font-size: 12.5px; color: var(--ink-faint); font-weight: 600; }
+
+        /* keunggulan: daftar bergaris, bukan kartu */
+        .perks { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
+        .perk { display: flex; gap: 18px; padding: 28px 28px 28px 0; border-bottom: 1px solid var(--line); }
+        .perk:nth-child(even) { padding-left: 28px; padding-right: 0; border-left: 1px solid var(--line); }
+        .perk .ico { color: var(--red); margin-top: 3px; }
+        .perk h3 { font-size: 19px; margin-bottom: 6px; }
+        .perk p { color: var(--ink-soft); font-size: 15.5px; }
+
+        /* langkah: urutan nyata */
+        .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; counter-reset: s; position: relative; }
+        .steps::before { content: ""; position: absolute; top: 19px; left: 19px; right: 19px; height: 2px; background: var(--line); }
+        .step { position: relative; padding-right: 22px; }
+        .step::before { counter-increment: s; content: counter(s); position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: #fff; font-weight: 800; margin-bottom: 16px; box-shadow: 0 0 0 6px #fff; }
+        .step h3 { font-size: 17px; margin-bottom: 6px; }
+        .step p { color: var(--ink-soft); font-size: 15px; }
+
+        /* biaya */
+        .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+        .price-card { background: var(--ink); color: #fff; border-radius: 16px; padding: 38px 36px; }
+        .price-card .label { color: #aebfd3; font-weight: 600; font-size: 15px; }
+        .price-amount { font-size: clamp(44px, 7vw, 62px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; margin: 6px 0 4px; white-space: nowrap; }
+        .price-amount small { font-size: 18px; font-weight: 600; letter-spacing: 0; color: #aebfd3; }
+        .price-card ul { list-style: none; margin: 24px 0 0; padding: 20px 0 0; border-top: 1px solid rgba(255, 255, 255, 0.16); }
+        .price-card li { display: flex; gap: 10px; padding: 5px 0; font-size: 15.5px; }
+        .price-card li .ico { color: var(--gold); margin-top: 3px; }
+        .est { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 30px 32px; }
+        .est h3 { font-size: 19px; margin-bottom: 4px; }
+        .est > p { color: var(--ink-faint); font-size: 14px; margin-bottom: 14px; }
+        .est-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 15px 0; border-top: 1px solid var(--line-soft); }
+        .est-row span { color: var(--ink-soft); }
+        .est-row b { font-size: 21px; font-variant-numeric: tabular-nums; }
+
+        .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+        /* faq */
+        .faq { max-width: 780px; }
+        .faq details { border-top: 1px solid var(--line); }
+        .faq details:last-child { border-bottom: 1px solid var(--line); }
+        .faq summary { cursor: pointer; font-weight: 700; font-size: 17px; padding: 20px 0; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+        .faq summary::-webkit-details-marker { display: none; }
+        .faq summary::after { content: "+"; font-size: 24px; line-height: 1; color: var(--red); font-weight: 600; }
+        .faq details[open] summary::after { content: "\2013"; }
+        .faq details p { padding: 0 40px 22px 0; color: var(--ink-soft); }
+
+        /* form daftar */
+        .signup { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 48px; align-items: start; }
+        .signup-side h2 { margin-bottom: 12px; }
+        .signup-side p { color: var(--ink-soft); }
+        .signup-side ul { list-style: none; padding: 0; margin: 22px 0 0; }
+        .signup-side li { display: flex; gap: 10px; padding: 8px 0; color: var(--ink-soft); }
+        .signup-side li .ico { color: var(--green); margin-top: 3px; }
+        .kelas-sekolah { display: grid; grid-template-columns: 96px 1fr; gap: 10px; }
+
+        /* footer */
+        .footer { background: var(--ink); color: #aebfd3; padding: 56px 0 26px; }
+        .footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 40px; padding-bottom: 34px; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+        .footer h3, .footer h4 { color: #fff; margin-bottom: 14px; font-size: 17px; }
+        .footer a { color: #aebfd3; text-decoration: none; display: block; padding: 4px 0; }
+        .footer a:hover { color: #fff; }
+        .footer p { margin-bottom: 10px; font-size: 15px; }
+        .pay { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .pay span { padding: 6px 12px; border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 6px; color: #fff; font-size: 13px; font-weight: 700; }
+        .copyright { padding-top: 22px; font-size: 14px; text-align: center; }
+
+        .wa-float { position: fixed; right: 18px; bottom: 18px; z-index: 90; display: inline-flex; align-items: center; gap: 9px; background: #128a4b; color: #fff; text-decoration: none; font-weight: 700; padding: 13px 18px; border-radius: 999px; box-shadow: 0 8px 22px rgba(18, 138, 75, 0.4); }
+        .wa-float:hover { background: #0e703c; }
+
+        @media (max-width: 900px) {
+            .band { padding: 56px 0; }
+            .nav-toggle { display: block; }
+            .nav-top .wrap { flex-wrap: wrap; height: auto; min-height: 62px; }
+            .nav-links { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 0; padding-bottom: 12px; }
+            .nav-links.open { display: flex; }
+            .nav-links a:not(.btn) { padding: 13px 2px; border-top: 1px solid var(--line-soft); }
+            .nav-links .btn { margin-top: 8px; }
+            .hero .wrap { grid-template-columns: 1fr; padding-top: 40px; padding-bottom: 54px; }
+            .hero-art { order: -1; max-width: 340px; margin: 0 auto 18px; }
+            .hero-art img { max-width: 250px; }
+            .hero-art .rapor { position: relative; left: auto; bottom: auto; width: 100%; max-width: 300px; margin: -52px auto 0; }
+            .hero-art .caption { position: static; display: block; margin-top: 8px; }
+            .hero-text { padding-left: 14px; }
+            .facts-strip { grid-template-columns: 1fr; width: 100%; }
+            .facts-strip div { border-left: 0; border-top: 1px solid var(--line-soft); display: flex; justify-content: space-between; align-items: center; }
+            .facts-strip div:first-child { border-top: 0; }
+            .perks { grid-template-columns: 1fr; }
+            .perk, .perk:nth-child(even) { padding: 22px 0; border-left: 0; }
+            .steps { grid-template-columns: 1fr; gap: 26px; }
+            .steps::before { top: 20px; bottom: 20px; left: 19px; right: auto; width: 2px; height: auto; }
+            .step { padding: 0 0 0 58px; }
+            .step::before { position: absolute; left: 0; top: 0; margin: 0; }
+            .price-grid, .signup, .footer-grid, .testi-grid { grid-template-columns: 1fr; }
+            .signup { gap: 28px; }
+            .price-card { padding: 30px 24px; } .est { padding: 24px 22px; }
+        }
+        @media (max-width: 480px) {
+            .wrap { padding: 0 18px; }
+            .wa-float span { display: none; } .wa-float { padding: 14px; }
+            .kelas-sekolah { grid-template-columns: 84px 1fr; }
+        }
+    </style>
+</head>
+<body>
+{% set wa_tanya = wa_link(bimbel.wa_admin, 'Halo Admin ' ~ bimbel.nama ~ ', saya ingin bertanya tentang les privat untuk anak saya.') %}
+
+<nav class="nav-top" aria-label="Navigasi utama">
+    <div class="wrap">
+        <a href="/" class="brand"><img src="{{ url_for('static', filename='logo1b.jpg') }}" alt="">Ruang Ilmu</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">{{ icon('menu', 26) }}</button>
+        <div class="nav-links" id="navLinks">
+            <a href="#keunggulan">Keunggulan</a>
+            <a href="#cara-kerja">Cara mulai</a>
+            <a href="#biaya">Biaya</a>
+            <a href="#faq">Tanya jawab</a>
+            <a href="/portal">Rapor anak</a>
+            <a href="#booking" class="btn btn-primary btn-sm">Daftar sekarang</a>
+        </div>
+    </div>
+</nav>
+
+<header class="hero">
+    <div class="wrap">
+        <div class="hero-text">
+            <span class="pill">{{ icon('book', 16) }}Diawali mengaji Iqro dan bimbingan akhlak</span>
+            <h1>Teman terbaik belajarmu</h1>
+            <p class="hero-lead">Les privat SD yang datang ke rumah. Anak didampingi memahami materi sekolah, sambil ditanamkan adab dan kisah teladan keislaman.</p>
+            <div class="hero-cta">
+                <a href="#booking" class="btn btn-primary">Daftar sekarang</a>
+                <a href="{{ wa_tanya }}" target="_blank" rel="noopener" class="btn btn-ghost">{{ icon('chat', 18) }}Tanya lewat WhatsApp</a>
+            </div>
+            <div class="facts-strip">
+                <div><span>Lokasi belajar</span><b>Tutor ke rumah</b></div>
+                <div><span>Tarif</span><b class="num">{{ bimbel.harga|rupiah }} / {{ bimbel.durasi_menit }} menit</b></div>
+                <div><span>Pantauan</span><b>Rapor digital</b></div>
+            </div>
+        </div>
+        <div class="hero-art">
+            <img src="{{ url_for('static', filename='maskot.png') }}" alt="Dua murid SD berseragam membawa buku">
+            <article class="rapor" aria-label="Contoh tampilan rapor digital">
+                <div class="rapor-date">Contoh rapor digital</div>
+                <h3>Perkalian 6 sampai 9</h3>
+                <span class="stamp stamp-green">Sudah tercapai</span>
+            </article>
+        </div>
+    </div>
+</header>
+
+<section class="band" id="keunggulan">
+    <div class="wrap">
+        <h2>Belajar yang terukur, karakter yang terjaga</h2>
+        <p class="intro">Kami memadukan pendampingan akademik dan pembiasaan nilai Islami dalam satu sesi.</p>
+        <div class="perks">
+            <div class="perk">{{ icon('book', 28) }}<div><h3>Nilai Islami di setiap sesi</h3><p>Pertemuan dibuka dengan mengaji Iqro, nasehat adab, dan kisah teladan untuk membangun karakter anak.</p></div></div>
+            <div class="perk">{{ icon('home', 28) }}<div><h3>Tutor datang ke rumah</h3><p>Anak belajar di tempat yang nyaman dan Anda tidak perlu antar-jemput.</p></div></div>
+            <div class="perk">{{ icon('target', 28) }}<div><h3>Belajar sesuai kebutuhan anak</h3><p>Materi menyesuaikan karakter dan target Ananda, dari PR sekolah sampai penguatan pelajaran tertentu.</p></div></div>
+            <div class="perk">{{ icon('chart', 28) }}<div><h3>Rapor digital untuk orang tua</h3><p>Materi, capaian, dan catatan tutor tiap sesi bisa dibuka kapan saja lewat nomor WhatsApp Anda.</p></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="band band-white" id="cara-kerja">
+    <div class="wrap">
+        <h2>Cara mulai les</h2>
+        <p class="intro">Prosesnya singkat, dan komunikasinya lewat WhatsApp.</p>
+        <div class="steps">
+            <div class="step"><h3>Isi formulir</h3><p>Lengkapi data Ananda, alamat rumah, dan target belajarnya.</p></div>
+            <div class="step"><h3>Kami menghubungi Anda</h3><p>Tim kami menghubungi WhatsApp Anda untuk menyepakati jadwal.</p></div>
+            <div class="step"><h3>Tutor datang ke rumah</h3><p>Sesi {{ bimbel.durasi_menit }} menit: mengaji dulu, lalu belajar materi sekolah.</p></div>
+            <div class="step"><h3>Pantau di rapor digital</h3><p>Setelah sesi, laporan belajar tersedia di portal orang tua.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="band" id="biaya">
+    <div class="wrap">
+        <h2>Biaya les</h2>
+        <p class="intro">Bayar per pertemuan. Jumlah pertemuan per minggu bisa disesuaikan dengan kebutuhan Ananda.</p>
+        <div class="price-grid">
+            <div class="price-card">
+                <div class="label">Les privat {{ bimbel.jenjang }}</div>
+                <div class="price-amount">{{ bimbel.harga|rupiah }} <small>/ pertemuan</small></div>
+                <div class="label">Durasi {{ bimbel.durasi_menit }} menit</div>
+                <ul>
+                    <li>{{ icon('check', 18) }}Tutor datang ke rumah</li>
+                    <li>{{ icon('check', 18) }}Diawali mengaji Iqro dan bimbingan akhlak</li>
+                    <li>{{ icon('check', 18) }}Pendampingan materi sekolah</li>
+                    <li>{{ icon('check', 18) }}Akses rapor digital untuk orang tua</li>
+                </ul>
+            </div>
+            <div class="est">
+                <h3>Estimasi biaya per bulan</h3>
+                <p>Perkiraan dengan 4 minggu per bulan. Jumlah sebenarnya mengikuti jadwal yang disepakati.</p>
+                {% for kali in (1, 2, 3) %}
+                <div class="est-row"><span>{{ kali }}x seminggu ({{ kali * 4 }} pertemuan)</span><b>{{ (bimbel.harga * kali * 4)|rupiah }}</b></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if bimbel.tampilkan_testimoni %}
+<section class="band band-white" id="testimoni">
+    <div class="wrap">
+        <h2>Kata orang tua</h2>
+        <p class="intro">Cerita dari keluarga yang sudah belajar bersama kami.</p>
+        <div class="testi-grid">
+            <!-- GANTI dengan testimoni ASLI (minta izin orang tua), lalu set tampilkan_testimoni=True di app.py -->
+            <article class="rapor" style="padding-left:62px"><p>"Isi testimoni di sini."</p><p class="rapor-date" style="margin-top:8px">Nama orang tua, kelas ...</p></article>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="band {{ '' if bimbel.tampilkan_testimoni else 'band-white' }}" id="faq">
+    <div class="wrap">
+        <h2>Pertanyaan yang sering diajukan</h2>
+        <p class="intro">Belum menemukan jawabannya? <a href="{{ wa_tanya }}" target="_blank" rel="noopener" style="font-weight:700">Tanya langsung lewat WhatsApp</a>.</p>
+        <div class="faq">
+            <details><summary>Untuk kelas berapa saja les ini?</summary><p>Saat ini kami melayani siswa {{ bimbel.jenjang }}.</p></details>
+            <details><summary>Berapa lama satu pertemuan dan berapa biayanya?</summary><p>Satu pertemuan berdurasi {{ bimbel.durasi_menit }} menit dengan biaya {{ bimbel.harga|rupiah }}. Jumlah pertemuan per minggu bisa disesuaikan.</p></details>
+            <details><summary>Apakah tutor datang ke rumah? Area mana saja yang dilayani?</summary><p>Ya, tutor datang langsung ke rumah. Kami berpusat di {{ bimbel.lokasi }}. Untuk memastikan alamat Anda terjangkau, tanyakan lewat WhatsApp atau cantumkan alamat lengkap di formulir pendaftaran.</p></details>
+            <details><summary>Bagaimana jadwalnya ditentukan?</summary><p>Setelah formulir terkirim, tim kami menghubungi WhatsApp Anda untuk menyepakati hari dan jam yang paling nyaman untuk Ananda.</p></details>
+            <details><summary>Bagaimana cara memantau perkembangan anak?</summary><p>Setiap selesai sesi, tutor mengisi laporan belajar. Buka halaman <a href="/portal">Rapor anak</a> dan masukkan nomor WhatsApp yang didaftarkan.</p></details>
+            <details><summary>Apa saja metode pembayarannya?</summary><p>Transfer bank (BCA, Mandiri) dan e-wallet (QRIS, GoPay). Detail pembayaran dikirim admin lewat WhatsApp.</p></details>
+        </div>
+    </div>
+</section>
+
+<section class="band" id="booking">
+    <div class="wrap signup">
+        <div class="signup-side">
+            <h2>Daftar les</h2>
+            <p>Isi data berikut. Alamat lengkap dan target belajar membantu tutor menyiapkan materi yang tepat sebelum sesi pertama.</p>
+            <ul>
+                <li>{{ icon('check', 18) }}Gratis mendaftar, tanpa kewajiban</li>
+                <li>{{ icon('check', 18) }}Jadwal disepakati lewat WhatsApp</li>
+                <li>{{ icon('check', 18) }}Tarif {{ bimbel.harga|rupiah }} per pertemuan</li>
+            </ul>
+        </div>
+        <div class="panel"><form class="panel-body" method="POST" action="/" style="padding:28px">
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert', 18) }}<span>{{ error }}</span></div>{% endif %}
+
+            <div class="form-section">
+                <h3>Data murid</h3>
+                <div class="field"><label for="nama_siswa">Nama lengkap anak</label><input class="input" type="text" id="nama_siswa" name="nama_siswa" value="{{ form.get('nama_siswa', '') }}" required></div>
+                <div class="field"><label for="kelas">Kelas dan asal sekolah</label>
+                    <div class="kelas-sekolah">
+                        <input class="input" type="text" id="kelas" name="kelas" placeholder="Kelas" value="{{ form.get('kelas', '') }}" required>
+                        <input class="input" type="text" name="asal_sekolah" placeholder="SD Negeri ..." value="{{ form.get('asal_sekolah', '') }}" aria-label="Asal sekolah" required>
+                    </div></div>
+                <div class="field"><label for="target_belajar">Target belajar dan hal yang perlu diketahui tutor <span class="opt">(opsional)</span></label>
+                    <textarea class="textarea" id="target_belajar" name="target_belajar" placeholder="Contoh: Perlu penguatan perkalian. Anaknya pemalu, mohon diajak ngobrol pelan-pelan.">{{ form.get('target_belajar', '') }}</textarea></div>
+            </div>
+
+            <div class="form-section">
+                <h3>Kontak dan lokasi</h3>
+                <div class="grid-2">
+                    <div class="field"><label for="nama_ortu">Nama orang tua</label><input class="input" type="text" id="nama_ortu" name="nama_ortu" value="{{ form.get('nama_ortu', '') }}" required></div>
+                    <div class="field"><label for="nomor_wa">Nomor WhatsApp aktif</label><input class="input" type="tel" inputmode="tel" autocomplete="tel" id="nomor_wa" name="nomor_wa" placeholder="0812 3456 7890" value="{{ form.get('nomor_wa', '') }}" required></div>
+                </div>
+                <div class="field"><label for="alamat">Alamat rumah</label><textarea class="textarea" id="alamat" name="alamat" placeholder="Jalan, RT/RW, kelurahan, patokan rumah" required>{{ form.get('alamat', '') }}</textarea></div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Kirim pendaftaran</button>
+        </form></div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="wrap">
+        <div class="footer-grid">
+            <div>
+                <h3>{{ bimbel.nama }}</h3>
+                <p>Teman terbaik belajarmu. Les privat SD ke rumah dengan nilai Islami dan rapor digital untuk orang tua.</p>
+                <p><b style="color:#fff">Pusat operasional</b><br>{{ bimbel.lokasi }}</p>
+                <p><b style="color:#fff">WhatsApp admin</b><br><a href="{{ wa_tanya }}" target="_blank" rel="noopener" style="display:inline">{{ bimbel.wa_tampil }}</a></p>
+            </div>
+            <div>
+                <h4>Navigasi</h4>
+                <a href="#keunggulan">Keunggulan</a><a href="#biaya">Biaya les</a><a href="#faq">Tanya jawab</a>
+                <a href="/portal">Rapor anak</a><a href="/login">Masuk tutor</a>
+            </div>
+            <div>
+                <h4>Pembayaran</h4>
+                <p>Transfer bank dan e-wallet</p>
+                <div class="pay"><span>BCA</span><span>Mandiri</span><span>QRIS</span><span>GoPay</span></div>
+            </div>
+        </div>
+        <div class="copyright">&copy; 2026 {{ bimbel.nama }}</div>
+    </div>
+</footer>
+
+<a href="{{ wa_tanya }}" target="_blank" rel="noopener" class="wa-float" aria-label="Chat WhatsApp admin">{{ icon('chat', 22) }}<span>Chat admin</span></a>
+
+<script>
+    var toggle = document.getElementById('navToggle'), links = document.getElementById('navLinks');
+    function tutup() { links.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); }
+    toggle.addEventListener('click', function () {
+        var open = links.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', String(open));
+    });
+    links.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', tutup); });
+</script>
+</body>
+</html>

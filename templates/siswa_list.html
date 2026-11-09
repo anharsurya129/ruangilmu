@@ -1,0 +1,47 @@
+{% extends 'base_admin.html' %}
+{% from '_ui.html' import icon %}
+{% block title %}Siswa{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div><h1>Siswa</h1><p class="sub">{{ siswa|length }} murid terdaftar</p></div>
+    <div class="actions"><a class="btn btn-primary" href="{{ url_for('tambah_siswa') }}">{{ icon('plus', 18) }}Siswa baru</a></div>
+</div>
+
+<section class="panel" data-filter-scope>
+    <div class="toolbar">
+        <div class="search" style="flex-basis:360px">{{ icon('search', 18) }}<input class="input" type="search" placeholder="Cari nama murid, orang tua, atau sekolah" aria-label="Cari siswa" data-filter-input></div>
+    </div>
+    {% if siswa %}
+    <div class="table-wrap">
+    <table class="tbl stackable">
+        <thead><tr><th>Murid</th><th>Orang tua</th><th>Sesi</th><th class="t-right">Aksi</th></tr></thead>
+        <tbody>
+        {% for s in siswa %}
+        <tr data-row data-text="{{ s.nama_siswa }} {{ s.nama_ortu }} {{ s.asal_sekolah }} {{ s.kelas }}">
+            <td class="lead" data-label="Murid">
+                <div style="display:flex;gap:12px;align-items:center">
+                    <span class="avatar">{{ s.nama_siswa|inisial }}</span>
+                    <span><a class="cell-title" href="{{ url_for('siswa_detail', id_siswa=s.id_siswa) }}">{{ s.nama_siswa }}</a><span class="cell-sub">Kelas {{ s.kelas }}, {{ s.asal_sekolah }}</span></span>
+                </div>
+            </td>
+            <td class="lead" data-label="Orang tua"><span class="cell-title">{{ s.nama_ortu }}</span><span class="cell-sub num">+{{ s.nomor_wa }}</span></td>
+            <td data-label="Sesi" class="num">
+                {% if s.total_sesi == 0 %}<span class="badge badge-warn">Belum ada jadwal</span>
+                {% else %}{{ s.sesi_selesai }} selesai{% if s.sesi_mendatang %}, {{ s.sesi_mendatang }} terjadwal{% endif %}{% endif %}
+            </td>
+            <td class="t-actions">
+                <a class="btn btn-wa btn-sm" target="_blank" rel="noopener" href="{{ wa_link(s.nomor_wa, 'Halo Ibu/Bapak ' ~ s.nama_ortu ~ ', kami dari ' ~ bimbel.nama ~ '.') }}">{{ icon('chat', 15) }}WhatsApp</a>
+                <a class="btn btn-ghost btn-sm" href="{{ url_for('siswa_detail', id_siswa=s.id_siswa) }}">Detail</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <div class="empty" data-filter-empty hidden><strong>Tidak ada siswa yang cocok</strong>Periksa ejaan nama atau coba kata kunci lain.</div>
+    {% else %}
+    <div class="empty"><strong>Belum ada siswa</strong>Pendaftar dari website akan muncul di sini, atau tambahkan sendiri.
+        <div><a class="btn btn-primary btn-sm" href="{{ url_for('tambah_siswa') }}">{{ icon('plus', 15) }}Siswa baru</a></div></div>
+    {% endif %}
+</section>
+{% endblock %}

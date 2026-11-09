@@ -1,0 +1,56 @@
+{% extends 'base_admin.html' %}
+{% from '_ui.html' import icon %}
+{% block title %}Atur jadwal{% endblock %}
+{% block content %}
+<a class="back-link" href="{{ url_for('jadwal_list') }}">{{ icon('arrow-left', 16) }}Semua jadwal</a>
+<div class="page-head"><div><h1>Atur jadwal</h1><p class="sub">Pilih murid, tanggal, dan jam pertemuan.</p></div></div>
+
+<section class="panel" style="max-width:640px">
+    <form class="panel-body" method="post" novalidate>
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert', 18) }}<span>{{ error }}</span></div>{% endif %}
+
+        {% if siswa %}
+        <div class="field">
+            <label for="id_siswa">Murid</label>
+            <select class="select" id="id_siswa" name="id_siswa" required>
+                <option value="" disabled {{ 'selected' if not form.id_siswa }}>Pilih murid</option>
+                {% for s in siswa %}<option value="{{ s.id_siswa }}" {{ 'selected' if form.id_siswa|string == s.id_siswa|string }}>{{ s.nama_siswa }} (kelas {{ s.kelas }})</option>{% endfor %}
+            </select>
+        </div>
+        <div class="field"><label for="tanggal_les">Tanggal</label><input class="input" type="date" id="tanggal_les" name="tanggal_les" value="{{ form.tanggal_les }}" required></div>
+        <div class="grid-2">
+            <div class="field"><label for="jam_mulai">Jam mulai</label><input class="input" type="time" id="jam_mulai" name="jam_mulai" value="{{ form.jam_mulai }}" required></div>
+            <div class="field"><label for="jam_selesai">Jam selesai</label><input class="input" type="time" id="jam_selesai" name="jam_selesai" value="{{ form.jam_selesai }}" required>
+                <p class="help">Terisi otomatis {{ bimbel.durasi_menit }} menit setelah jam mulai.</p></div>
+        </div>
+        <div class="alert" style="background:var(--sky-tint);color:var(--ink);font-weight:500;border:1px solid #cbdcf0">{{ icon('clock', 18) }}<span>Tarif {{ bimbel.harga|rupiah }} per pertemuan. Sesi baru tercatat <b>belum lunas</b> sampai Anda menandainya.</span></div>
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Simpan jadwal</button>
+            <a class="btn btn-ghost" href="{{ url_for('jadwal_list') }}">Batal</a>
+        </div>
+        {% else %}
+        <div class="empty"><strong>Belum ada murid</strong>Tambahkan murid dulu sebelum mengatur jadwal.
+            <div><a class="btn btn-primary btn-sm" href="{{ url_for('tambah_siswa') }}">{{ icon('plus', 15) }}Siswa baru</a></div></div>
+        {% endif %}
+    </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+    var mulai = document.getElementById('jam_mulai'), selesai = document.getElementById('jam_selesai');
+    if (!mulai) return;
+    var durasi = {{ bimbel.durasi_menit }};
+    var disentuh = !!selesai.value;
+    selesai.addEventListener('input', function () { disentuh = true; });
+    mulai.addEventListener('input', function () {
+        if (disentuh && selesai.value) return;
+        var p = mulai.value.split(':'); if (p.length < 2) return;
+        var total = parseInt(p[0], 10) * 60 + parseInt(p[1], 10) + durasi;
+        if (total >= 24 * 60) return;
+        selesai.value = String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
+    });
+})();
+</script>
+{% endblock %}

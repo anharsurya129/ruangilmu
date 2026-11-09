@@ -1,0 +1,130 @@
+{% extends 'base_admin.html' %}
+{% from '_ui.html' import icon %}
+{% block title %}Ringkasan{% endblock %}
+{% block content %}
+{% set wa_hai = 'Halo Ibu/Bapak ' %}
+
+<div class="page-head">
+    <div>
+        <h1>Selamat {{ sapaan }}</h1>
+        <p class="sub">{{ today|tgl }}, {{ total_siswa }} siswa terdaftar</p>
+    </div>
+    <div class="actions">
+        <a class="btn btn-ghost" href="{{ url_for('tambah_siswa') }}">{{ icon('plus', 18) }}Siswa baru</a>
+        <a class="btn btn-primary" href="{{ url_for('booking') }}">{{ icon('calendar', 18) }}Atur jadwal</a>
+    </div>
+</div>
+
+{% if pendaftar_baru %}
+<div class="callout joined">
+    <div class="grow">
+        <strong>{{ pendaftar_baru|length }} pendaftar belum punya jadwal</strong>
+        <span class="muted">Hubungi lewat WhatsApp untuk menyepakati jam belajar, lalu atur jadwalnya.</span>
+    </div>
+</div>
+<div class="panel joined">
+    {% for s in pendaftar_baru[:5] %}
+    <div class="row-item">
+        <span class="avatar">{{ s.nama_siswa|inisial }}</span>
+        <div class="grow">
+            <a class="cell-title" href="{{ url_for('siswa_detail', id_siswa=s.id_siswa) }}">{{ s.nama_siswa }}</a>
+            <span class="cell-sub">Kelas {{ s.kelas }}, orang tua {{ s.nama_ortu }}</span>
+        </div>
+        <div class="row-actions">
+            <a class="btn btn-wa btn-sm" target="_blank" rel="noopener"
+               href="{{ wa_link(s.nomor_wa, 'Halo Ibu/Bapak ' ~ s.nama_ortu ~ ', kami dari ' ~ bimbel.nama ~ '. Terima kasih sudah mendaftarkan Ananda ' ~ s.nama_siswa ~ '. Kapan jadwal yang nyaman untuk memulai les?') }}">{{ icon('chat', 15) }}Hubungi</a>
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('booking', id_siswa=s.id_siswa) }}">Atur jadwal</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="ledger">
+    <div class="ledger-item">
+        <div class="ledger-label">Sesi hari ini</div>
+        <div class="ledger-value">{{ sesi_hari_ini|length }}</div>
+        <div class="ledger-hint">{{ mendatang|length }} sesi dalam 7 hari ke depan</div>
+    </div>
+    <a class="ledger-item {{ 'is-alert' if perlu_laporan }}" href="{{ url_for('jadwal_list', f='perlu_laporan') }}">
+        <div class="ledger-label">Laporan belum diisi</div>
+        <div class="ledger-value">{{ perlu_laporan|length }}</div>
+        <div class="ledger-hint">{{ 'Sesi yang sudah lewat' if perlu_laporan else 'Semua sudah terisi' }}</div>
+    </a>
+    <a class="ledger-item {{ 'is-alert' if jumlah_tagihan }}" href="{{ url_for('keuangan') }}">
+        <div class="ledger-label">Tagihan jatuh tempo</div>
+        <div class="ledger-value">{{ total_tagihan|rupiah }}</div>
+        <div class="ledger-hint">{{ jumlah_tagihan }} sesi belum lunas</div>
+    </a>
+    <a class="ledger-item" href="{{ url_for('keuangan') }}">
+        <div class="ledger-label">Pemasukan {{ bulan_label }}</div>
+        <div class="ledger-value">{{ pemasukan_bulan_ini|rupiah }}</div>
+        <div class="ledger-hint">Dari sesi yang sudah lunas</div>
+    </a>
+</div>
+
+<div class="cols">
+    <div class="stack">
+        <section class="panel">
+            <div class="panel-head"><h2>Jadwal hari ini</h2><span class="sub">{{ today|tgl }}</span></div>
+            {% for j in sesi_hari_ini %}
+            <div class="slot {{ 'is-done' if j.status == 'Selesai' }}">
+                <div class="slot-time"><b>{{ j.jam_mulai }}</b><span>sampai {{ j.jam_selesai }}</span></div>
+                <div class="slot-main">
+                    <a class="cell-title" href="{{ url_for('siswa_detail', id_siswa=j.id_siswa) }}">{{ j.nama_siswa }}</a>
+                    <span class="cell-sub">Kelas {{ j.kelas }}, {{ j.alamat }}</span>
+                </div>
+                <div class="slot-actions">
+                    <a class="btn btn-ghost btn-icon btn-sm" target="_blank" rel="noopener" href="{{ peta_link(j.alamat) }}" title="Buka di peta" aria-label="Buka alamat di peta">{{ icon('pin', 16) }}</a>
+                    {% if j.status == 'Selesai' %}<span class="badge badge-ok">Selesai</span>
+                    {% else %}<a class="btn btn-primary btn-sm" href="{{ url_for('buat_laporan', id_jadwal=j.id_jadwal, next=next_url) }}">{{ icon('book', 15) }}Isi laporan</a>{% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="empty"><strong>Tidak ada sesi hari ini</strong>Waktu yang pas untuk mengatur jadwal minggu depan.
+                <div><a class="btn btn-ghost btn-sm" href="{{ url_for('booking') }}">{{ icon('plus', 15) }}Atur jadwal</a></div></div>
+            {% endfor %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-head"><h2>7 hari ke depan</h2><a class="btn btn-ghost btn-sm" href="{{ url_for('jadwal_list', f='mendatang') }}">Lihat semua</a></div>
+            {% for j in mendatang %}
+            <div class="row-item">
+                <div class="when"><b>{{ j.tanggal_les|tgl_relatif }}</b><span class="cell-sub num">{{ j.jam_mulai }} - {{ j.jam_selesai }}</span></div>
+                <div class="grow"><a class="cell-title" href="{{ url_for('siswa_detail', id_siswa=j.id_siswa) }}">{{ j.nama_siswa }}</a><span class="cell-sub">Kelas {{ j.kelas }}</span></div>
+            </div>
+            {% else %}
+            <div class="empty">Belum ada sesi terjadwal dalam seminggu ke depan.</div>
+            {% endfor %}
+        </section>
+    </div>
+
+    <div class="stack">
+        <section class="panel">
+            <div class="panel-head"><h2>Laporan yang perlu diisi</h2></div>
+            {% for j in perlu_laporan[:6] %}
+            <div class="row-item">
+                <div class="grow"><a class="cell-title" href="{{ url_for('siswa_detail', id_siswa=j.id_siswa) }}">{{ j.nama_siswa }}</a><span class="cell-sub">{{ j.tanggal_les|tgl }}</span></div>
+                <a class="btn btn-primary btn-sm" href="{{ url_for('buat_laporan', id_jadwal=j.id_jadwal, next=next_url) }}">Isi laporan</a>
+            </div>
+            {% else %}
+            <div class="empty"><strong>Semua laporan sudah terisi</strong>Orang tua bisa melihat perkembangan terbaru anaknya.</div>
+            {% endfor %}
+            {% if perlu_laporan|length > 6 %}<div class="row-item"><a href="{{ url_for('jadwal_list', f='perlu_laporan') }}">Lihat {{ perlu_laporan|length - 6 }} lainnya</a></div>{% endif %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-head"><h2>Tagihan jatuh tempo</h2><a class="btn btn-ghost btn-sm" href="{{ url_for('keuangan') }}">Keuangan</a></div>
+            {% for t in tagihan[:5] %}
+            <div class="row-item">
+                <div class="grow"><a class="cell-title" href="{{ url_for('siswa_detail', id_siswa=t.id_siswa) }}">{{ t.nama_siswa }}</a><span class="cell-sub num">{{ t.jumlah }} sesi, {{ t.total|rupiah }}</span></div>
+                <a class="btn btn-wa btn-sm" target="_blank" rel="noopener"
+                   href="{{ wa_link(t.nomor_wa, 'Halo Ibu/Bapak ' ~ t.nama_ortu ~ ', kami dari ' ~ bimbel.nama ~ '. Mengingatkan dengan hormat, ada ' ~ t.jumlah ~ ' sesi les Ananda ' ~ t.nama_siswa ~ ' yang belum tercatat lunas (total ' ~ (t.total|rupiah) ~ '). Jika sudah transfer, mohon kirim bukti pembayarannya. Terima kasih.') }}">{{ icon('chat', 15) }}Ingatkan</a>
+            </div>
+            {% else %}
+            <div class="empty"><strong>Tidak ada tagihan tertunda</strong>Semua sesi yang sudah berjalan tercatat lunas.</div>
+            {% endfor %}
+        </section>
+    </div>
+</div>
+{% endblock %}

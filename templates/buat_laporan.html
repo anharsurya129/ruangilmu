@@ -1,0 +1,76 @@
+{% extends 'base_admin.html' %}
+{% from '_ui.html' import icon %}
+{% block title %}{{ 'Ubah laporan' if edit else 'Isi laporan' }}{% endblock %}
+{% block content %}
+{% set opsi = [
+  ('🏆 Tercapai Sangat Baik', 'Tercapai sangat baik', 'Paham penuh dan percaya diri'),
+  ('✅ Sudah Tercapai', 'Sudah tercapai', 'Target sesi terpenuhi'),
+  ('📖 Perlu Pendalaman', 'Perlu pendalaman', 'Butuh diulang di sesi berikutnya'),
+  ('🧩 Bimbingan Intensif', 'Bimbingan intensif', 'Perlu pendampingan lebih banyak')
+] %}
+<a class="back-link" href="{{ request.args.get('next') or url_for('jadwal_list') }}">{{ icon('arrow-left', 16) }}Kembali</a>
+<div class="page-head">
+    <div><h1>{{ 'Ubah laporan' if edit else 'Isi laporan' }}</h1><p class="sub">{{ jadwal.nama_siswa }}, {{ jadwal.tanggal_les|tgl }}, {{ jadwal.jam_mulai }} - {{ jadwal.jam_selesai }}</p></div>
+</div>
+
+<div class="cols" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)">
+    <section class="panel">
+        <form class="panel-body" method="post" novalidate>
+            <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+            <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+            {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert', 18) }}<span>{{ error }}</span></div>{% endif %}
+
+            <div class="field"><label for="materi">Materi yang dipelajari</label>
+                <input class="input" id="materi" name="materi" value="{{ lama.materi if lama else '' }}" placeholder="Contoh: Perkalian 6 sampai 9" required autofocus></div>
+
+            <div class="field" role="radiogroup" aria-labelledby="capaianLabel">
+                <span class="label" id="capaianLabel">Capaian sesi</span>
+                <div class="choice-grid">
+                    {% for nilai, judul, ket in opsi %}
+                    <label class="choice"><input type="radio" name="status_tujuan" value="{{ nilai }}" {{ 'checked' if lama and lama.status_tujuan == nilai }} required><span>{{ judul }}<small>{{ ket }}</small></span></label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="field"><label for="catatan">Catatan untuk orang tua <span class="opt">(opsional)</span></label>
+                <textarea class="textarea" id="catatan" name="catatan_bimbingan" placeholder="Ceritakan perkembangan, kesulitan, atau hal yang bisa dilatih di rumah.">{{ lama.catatan_bimbingan if lama else '' }}</textarea></div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">{{ 'Simpan perubahan' if edit else 'Simpan laporan' }}</button>
+                <a class="btn btn-ghost" href="{{ request.args.get('next') or url_for('jadwal_list') }}">Batal</a>
+            </div>
+        </form>
+    </section>
+
+    <aside>
+        <p class="muted" style="font-weight:700;margin-bottom:10px">Tampilan di portal orang tua</p>
+        <article class="rapor" aria-live="polite">
+            <div class="rapor-date">{{ jadwal.tanggal_les|tgl }}</div>
+            <h3 id="pvMateri">{{ (lama.materi if lama and lama.materi else 'Materi sesi ini') }}</h3>
+            <span class="stamp stamp-blue" id="pvStamp" {% if not (lama and lama.status_tujuan) %}hidden{% endif %}>{{ lama.status_tujuan|label_capaian if lama and lama.status_tujuan else '' }}</span>
+            <p class="rapor-note" id="pvCatatan"><b>Catatan tutor:</b> <span>{{ (lama.catatan_bimbingan if lama and lama.catatan_bimbingan else 'Catatan akan tampil di sini.') }}</span></p>
+        </article>
+    </aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+    var materi = document.getElementById('materi'), catatan = document.getElementById('catatan');
+    var pvM = document.getElementById('pvMateri'), pvC = document.querySelector('#pvCatatan span'), pvS = document.getElementById('pvStamp');
+    var tone = { 'Sangat Baik': 'gold', 'Sudah Tercapai': 'green', 'Pendalaman': 'amber', 'Intensif': 'blue' };
+    function bersih(t) { return t.replace(/^[^\w]+/, '').trim(); }
+    function warna(t) { for (var k in tone) if (t.indexOf(k) > -1) return tone[k]; return 'blue'; }
+    function setStamp(t) {
+        pvS.hidden = false; pvS.textContent = bersih(t);
+        pvS.className = 'stamp stamp-' + warna(t);
+    }
+    materi.addEventListener('input', function () { pvM.textContent = materi.value || 'Materi sesi ini'; });
+    catatan.addEventListener('input', function () { pvC.textContent = catatan.value || 'Catatan akan tampil di sini.'; });
+    document.querySelectorAll('input[name=status_tujuan]').forEach(function (r) {
+        r.addEventListener('change', function () { setStamp(r.value); });
+        if (r.checked) setStamp(r.value);
+    });
+})();
+</script>
+{% endblock %}

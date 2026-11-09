@@ -1,0 +1,17 @@
+{% extends 'base_public.html' %}
+{% from '_ui.html' import icon %}
+{% block title %}{{ judul }} - {{ bimbel.nama }}{% endblock %}
+{% block meta %}<meta name="robots" content="noindex">{% endblock %}
+{% block main_class %}narrow{% endblock %}
+{% block content %}
+<div class="pub-card center-card" style="margin-top:14px">
+    <span class="mark mark-err">{{ icon('alert', 28) }}</span>
+    <h1>{{ judul }}</h1>
+    <p class="lead">{{ pesan }}</p>
+    <div class="stack-btn">
+        <a class="btn btn-primary btn-block" href="{{ url_for('landing_page') }}">Ke beranda</a>
+        <button class="btn btn-ghost btn-block" type="button" onclick="history.length > 1 ? history.back() : location.assign('/')">Kembali</button>
+    </div>
+    <p class="faint" style="font-size:13px;margin-top:16px">Kode {{ kode }}</p>
+</div>
+{% endblock %}

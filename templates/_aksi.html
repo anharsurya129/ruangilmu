@@ -1,0 +1,24 @@
+{% from '_ui.html' import icon %}
+{# Aksi untuk satu baris jadwal. Impor dengan: {% from '_aksi.html' import aksi_jadwal with context %} #}
+{% macro aksi_jadwal(j, state) -%}
+{% if state == 'selesai' %}
+<a class="btn btn-ghost btn-sm" href="{{ url_for('buat_laporan', id_jadwal=j.id_jadwal, next=next_url) }}">{{ icon('edit', 15) }}Ubah laporan</a>
+{% else %}
+<a class="btn {{ 'btn-primary' if state == 'perlu_laporan' else 'btn-ghost' }} btn-sm" href="{{ url_for('buat_laporan', id_jadwal=j.id_jadwal, next=next_url) }}">{{ icon('book', 15) }}Isi laporan</a>
+{% endif %}
+{% if j.status_pembayaran == 'Lunas' %}
+<form class="inline-form" method="post" action="{{ url_for('batal_lunas', id_jadwal=j.id_jadwal) }}" data-confirm="Batalkan status lunas?|Sesi ini akan kembali tercatat belum lunas.|Ya, batalkan">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="next" value="{{ next_url }}">
+    <button class="btn btn-ghost btn-sm btn-icon" title="Batalkan status lunas" aria-label="Batalkan status lunas">{{ icon('undo', 15) }}</button>
+</form>
+{% else %}
+<form class="inline-form" method="post" action="{{ url_for('bayar_lunas', id_jadwal=j.id_jadwal) }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="next" value="{{ next_url }}">
+    <button class="btn btn-ghost btn-sm">{{ icon('check', 15) }}Tandai lunas</button>
+</form>
+{% endif %}
+<form class="inline-form" method="post" action="{{ url_for('hapus_jadwal', id_jadwal=j.id_jadwal) }}" data-confirm="Hapus jadwal ini?|Jadwal {{ j.nama_siswa }} pada {{ j.tanggal_les|tgl }} beserta laporan belajarnya akan dihapus permanen.|Ya, hapus">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="next" value="{{ next_url }}">
+    <button class="btn btn-danger btn-sm btn-icon" title="Hapus jadwal" aria-label="Hapus jadwal">{{ icon('trash', 15) }}</button>
+</form>
+{%- endmacro %}

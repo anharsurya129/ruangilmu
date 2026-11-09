@@ -1,0 +1,60 @@
+{% extends 'base_admin.html' %}
+{% from '_ui.html' import icon %}
+{% block title %}Keuangan{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Keuangan</h1><p class="sub">Dihitung dari jumlah sesi lunas dikali tarif {{ bimbel.harga|rupiah }} per pertemuan</p></div></div>
+
+<div class="ledger ledger-3">
+    <div class="ledger-item"><div class="ledger-label">Pemasukan {{ bulan_label }}</div><div class="ledger-value">{{ bulan_ini|rupiah }}</div><div class="ledger-hint">Sesi lunas bulan ini</div></div>
+    <div class="ledger-item {{ 'is-alert' if total_tagihan }}"><div class="ledger-label">Tagihan jatuh tempo</div><div class="ledger-value">{{ total_tagihan|rupiah }}</div><div class="ledger-hint">Sesi yang sudah berjalan, belum lunas</div></div>
+    <div class="ledger-item"><div class="ledger-label">Total pemasukan</div><div class="ledger-value">{{ total_masuk|rupiah }}</div><div class="ledger-hint">Sejak data pertama</div></div>
+</div>
+
+<div class="cols">
+    <div class="stack">
+        <section class="panel">
+            <div class="panel-head"><h2>Pemasukan 6 bulan terakhir</h2></div>
+            <div class="panel-body">
+                <div class="bars" role="img" aria-label="Grafik batang pemasukan enam bulan terakhir">
+                    {% for g in grafik %}
+                    <div class="bar {{ 'is-now' if g.aktif }}">
+                        <span class="bar-val">{{ ('%d rb' % (g.rupiah // 1000)) if g.rupiah else '-' }}</span>
+                        <div class="bar-fill" style="height:{{ [g.pct * 0.78, 2]|max }}%"></div>
+                        <span class="bar-label">{{ g.label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head"><h2>Rekap per bulan</h2></div>
+            {% if per_bulan %}
+            <div class="table-wrap"><table class="tbl stackable">
+                <thead><tr><th>Bulan</th><th>Sesi lunas</th><th>Belum lunas</th><th class="t-right">Pemasukan</th></tr></thead>
+                <tbody>{% for b in per_bulan %}
+                <tr><td data-label="Bulan"><b>{{ b.label }}</b></td><td data-label="Sesi lunas" class="num">{{ b.lunas }}</td><td data-label="Belum lunas" class="num">{{ b.belum }}</td><td data-label="Pemasukan" class="t-right num"><b>{{ b.rupiah|rupiah }}</b></td></tr>
+                {% endfor %}</tbody>
+            </table></div>
+            {% else %}<div class="empty">Belum ada data. Rekap muncul setelah ada jadwal.</div>{% endif %}
+        </section>
+    </div>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Tagihan jatuh tempo</h2></div>
+        {% for t in tagihan %}
+        <div class="row-item" style="flex-wrap:wrap">
+            <div class="grow"><a class="cell-title" href="{{ url_for('siswa_detail', id_siswa=t.id_siswa) }}">{{ t.nama_siswa }}</a><span class="cell-sub num">{{ t.jumlah }} sesi, {{ t.total|rupiah }}</span></div>
+            <a class="btn btn-wa btn-sm" target="_blank" rel="noopener"
+               href="{{ wa_link(t.nomor_wa, 'Halo Ibu/Bapak ' ~ t.nama_ortu ~ ', kami dari ' ~ bimbel.nama ~ '. Mengingatkan dengan hormat, ada ' ~ t.jumlah ~ ' sesi les Ananda ' ~ t.nama_siswa ~ ' yang belum tercatat lunas (total ' ~ (t.total|rupiah) ~ '). Jika sudah transfer, mohon kirim bukti pembayarannya. Terima kasih.') }}">{{ icon('chat', 15) }}Ingatkan</a>
+            <form class="inline-form" method="post" action="{{ url_for('lunas_siswa', id_siswa=t.id_siswa) }}" data-confirm="Tandai {{ t.jumlah }} sesi lunas?|Semua sesi {{ t.nama_siswa }} yang sudah berjalan akan tercatat lunas ({{ t.total|rupiah }}).|Ya, tandai lunas">
+                <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="next" value="{{ next_url }}">
+                <button class="btn btn-ghost btn-sm">{{ icon('check', 15) }}Lunasi</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="empty"><strong>Tidak ada tagihan tertunda</strong>Semua sesi yang sudah berjalan tercatat lunas.</div>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

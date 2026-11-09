@@ -1,0 +1,21 @@
+{% extends 'base_public.html' %}
+{% from '_ui.html' import icon %}
+{% block title %}Pendaftaran berhasil - {{ bimbel.nama }}{% endblock %}
+{% block main_class %}narrow{% endblock %}
+{% block content %}
+{% set pesan = 'Halo Admin ' ~ bimbel.nama ~ ', saya baru saja mendaftarkan Ananda ' ~ (nama_siswa or '') ~ ' lewat website. Mohon info jadwal les yang tersedia. Terima kasih.' %}
+<div class="pub-card center-card" style="margin-top:14px">
+    <span class="mark mark-ok">{{ icon('check', 30) }}</span>
+    <h1>Pendaftaran berhasil</h1>
+    <p class="lead" style="margin-bottom:0">Data {% if nama_siswa %}<b>{{ nama_siswa }}</b> {% endif %}sudah kami terima.</p>
+    <ol class="next-steps">
+        <li>Tim kami menghubungi WhatsApp Anda untuk menyepakati jadwal.</li>
+        <li>Tutor datang ke rumah sesuai jadwal. Tarif {{ bimbel.harga|rupiah }} per pertemuan ({{ bimbel.durasi_menit }} menit).</li>
+        <li>Setelah sesi, laporan belajar bisa dilihat di portal rapor.</li>
+    </ol>
+    <div class="stack-btn">
+        <a class="btn btn-wa btn-block" target="_blank" rel="noopener" href="{{ wa_link(bimbel.wa_admin, pesan) }}">{{ icon('chat', 18) }}Konfirmasi lewat WhatsApp</a>
+        <a class="btn btn-ghost btn-block" href="{{ url_for('landing_page') }}">Kembali ke beranda</a>
+    </div>
+</div>
+{% endblock %}
